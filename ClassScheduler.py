@@ -2,6 +2,8 @@ from collections import namedtuple
 from typing import List
 from random import choices
 
+# For Genome, I am thinking of having a list containing a list of ints instead
+Genome = List[List[int]]
 Classes = namedtuple("Class", ["name", "duration", "value", "num_students"])
 Days = namedtuple("Day", ["name", "available_duration"])
 
