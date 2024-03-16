@@ -10,6 +10,8 @@ Day = namedtuple("Day", ["name", "available_duration"])
 ClassesList = [
     Class("SPCC", "2", "5", "30"),
     Class("PSMOD", "2", "5", "30"),
+    Class("WPCS", "1", "2", "20"),
+    Class("Java", "3", "10", "30"),
 ]
 DaysList = [Day("Monday", "5"), Day("Tuesday", "10")]
 
@@ -25,14 +27,14 @@ def generate_genome():
                 todayClass.append(list(classs))
                 copyOfClass.remove(classs)
         schedule.append(todayClass)
-    print(len(schedule))
     return schedule
 
 
-def generate_population(size: int, genome_length: int):
+def generate_population(size: int):
     population = []
     for _ in range(size):
-        population.append(generate_genome(genome_length))
+        population.append(generate_genome())
+    print(population)
     return population
 
 
@@ -44,6 +46,7 @@ def generate_population(size: int, genome_length: int):
 # Need to think of a way to handle sequences of the class
 def fitness(genome: Genome, classes: List[Class], days: List[Day]) -> int:
     mapGenomeToClass = dict(zip(genome, classes))
+    print(mapGenomeToClass)
     duration_taken = 0
     value = 0
     for x, currGenome in enumerate(days):
@@ -61,9 +64,5 @@ def fitness(genome: Genome, classes: List[Class], days: List[Day]) -> int:
     return value
 
 
-x = 0
-while x != 100:
-    x = x + 1
-    print(generate_genome())
-    print("\n")
+generate_population(5)
 # fitness(generate_genome, ClassesList, DaysList)
