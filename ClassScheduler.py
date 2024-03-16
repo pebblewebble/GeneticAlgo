@@ -1,10 +1,11 @@
-from collections import namedtuple
+from collections import namedtuple, defaultdict
 import random
-from typing import List
+from typing import List, Dict
 from random import choices
 
 # For Genome, I am thinking of having a list containing a list of ints instead
-Genome: List[List[str]] = [[] for _ in range(5)]
+# Genome: List[List[str]] = [[] for _ in range(5)]
+Genome = Dict[str, List[str]]
 Class = namedtuple("Class", ["name", "duration", "value", "num_students"])
 Day = namedtuple("Day", ["name", "available_duration"])
 ClassesList = [
@@ -16,25 +17,21 @@ ClassesList = [
 DaysList = [Day("Monday", "5"), Day("Tuesday", "10")]
 
 
-def generate_genome():
-    copyOfClass = list(ClassesList.copy())
-    schedule = []
-    for x in range(len(DaysList)):
-        todayClass = []
-        for i, classs in enumerate(copyOfClass):
-            # 50 percent chance to put class into current day
+def generate_genome() -> Genome:
+    genome: Genome = defaultdict(list)
+    copyList = ClassesList.copy()
+    for day in DaysList:
+        for cls in copyList:
             if random.randint(0, 1) == 1:
-                todayClass.append(list(classs))
-                copyOfClass.remove(classs)
-        schedule.append(todayClass)
-    return schedule
+                genome[day.name].append(cls.name)
+                copyList.remove(cls)
+    return genome
 
 
-def generate_population(size: int):
+def generate_population(size: int) -> List[Genome]:
     population = []
     for _ in range(size):
         population.append(generate_genome())
-    print(population)
     return population
 
 
@@ -64,5 +61,5 @@ def fitness(genome: Genome, classes: List[Class], days: List[Day]) -> int:
     return value
 
 
-generate_population(5)
+print(generate_genome())
 # fitness(generate_genome, ClassesList, DaysList)
