@@ -5,14 +5,16 @@ from random import choices
 
 # For Genome, I am thinking of having a list containing a list of ints instead
 # Genome: List[List[str]] = [[] for _ in range(5)]
-Genome = Dict[str, List[str]]
 Class = namedtuple("Class", ["name", "duration", "value", "num_students"])
 Day = namedtuple("Day", ["name", "available_duration"])
+Genome = Dict[Day, List[Class]]
 ClassesList = [
     Class("SPCC", "2", "5", "30"),
     Class("PSMOD", "2", "5", "30"),
     Class("WPCS", "1", "2", "20"),
     Class("Java", "3", "10", "30"),
+    Class("ABC", "1", "1", "50"),
+    Class("SPCCT", "1", "5", "30"),
 ]
 DaysList = [Day("Monday", "5"), Day("Tuesday", "10")]
 
@@ -23,7 +25,7 @@ def generate_genome() -> Genome:
     for day in DaysList:
         for cls in copyList:
             if random.randint(0, 1) == 1:
-                genome[day.name].append(cls.name)
+                genome[day].append(cls)
                 copyList.remove(cls)
     return genome
 
@@ -42,24 +44,18 @@ def generate_population(size: int) -> List[Genome]:
 # Value was still be included just in case in the future I want to have a more favored class
 # Need to think of a way to handle sequences of the class
 def fitness(genome: Genome, classes: List[Class], days: List[Day]) -> int:
-    mapGenomeToClass = dict(zip(genome, classes))
-    print(mapGenomeToClass)
-    duration_taken = 0
+    duration_taken = 0  
     value = 0
-    for x, currGenome in enumerate(days):
-        for y, classs in enumerate(classes):
-            duration_taken += int(classs[x].duration)
+    for day in genome:
+        classsesInDay = genome[day]
+        for index in range(len(classsesInDay)):
+            duration_taken += int(classsesInDay[index].duration)
+            value += int(classsesInDay[index].value)
 
-    # for x, day in enumrate(days):
-    #     for i, classs in enumerate(classes):
-    #         if genome[i] == 1:
-    #             duration_taken += int(classs.duration)
-    #             value += int(classs.value)
-    #
-    #             if duration_taken > available_duration:
-    #                 return 0
+            if duration_taken>int(day.available_duration):
+                return 0
+    print(value)
     return value
 
 
-print(generate_genome())
-# fitness(generate_genome, ClassesList, DaysList)
+fitness(generate_genome(), ClassesList, DaysList)
