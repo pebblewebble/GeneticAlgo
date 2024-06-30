@@ -70,7 +70,7 @@ def selection_pair(population:Population) -> Population :
     sortedByFitness = sorted(genomeWithFitness,key=lambda x:x[1],reverse=True)
     return [genome for genome,_ in sortedByFitness[:2]]
 
-def single_point_crossover(firstGenome:Genome, secondGenome:Genome): 
+def single_point_crossover(firstGenome:Genome, secondGenome:Genome) : 
     for day in firstGenome:
         if len(firstGenome[day])<2:    
             return firstGenome,secondGenome
@@ -78,7 +78,7 @@ def single_point_crossover(firstGenome:Genome, secondGenome:Genome):
         p = randint(1, len(firstGenome[day]) - 1)
         # Basically puts a point in the genome to do the crossover, Genome A [0,1,1,0] Genome B [1,0,0,1] p=1,
         # the return [0,1,0,1],[1,0,1,0]
-        print(firstGenome[day][0:p] + secondGenome[day][p:], secondGenome[day][0:p] + firstGenome[day][p:])
+        return firstGenome[day][0:p] + secondGenome[day][p:], secondGenome[day][0:p] + firstGenome[day][p:]
     
 # Randomly mutate one of the bits in the genome
 def mutation(genome: Genome, num: int = 1, probability: float = 0.5) -> Genome:
