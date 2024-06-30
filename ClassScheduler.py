@@ -1,7 +1,7 @@
 from collections import namedtuple, defaultdict
 import random
 from typing import List, Dict, Tuple
-from random import choices,randint
+from random import choices,randint,randrange
 
 # For Genome, I am thinking of having a list containing a list of ints instead
 # Genome: List[List[str]] = [[] for _ in range(5)]
@@ -80,6 +80,14 @@ def single_point_crossover(firstGenome:Genome, secondGenome:Genome):
         # the return [0,1,0,1],[1,0,1,0]
         print(firstGenome[day][0:p] + secondGenome[day][p:], secondGenome[day][0:p] + firstGenome[day][p:])
     
+# Randomly mutate one of the bits in the genome
+def mutation(genome: Genome, num: int = 1, probability: float = 0.5) -> Genome:
+    for day in genome:
+        #Gets the range of the genome
+        index = randrange(len(genome[day]))
+        genome[day][index] = 1 if genome[day][index]==0 else 0 
+    return genome
+
 
 
 
