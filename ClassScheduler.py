@@ -1,7 +1,7 @@
 from collections import namedtuple, defaultdict
 import random
-from typing import List, Dict
-from random import choices
+from typing import List, Dict, Tuple
+from random import choices,randint
 
 # For Genome, I am thinking of having a list containing a list of ints instead
 # Genome: List[List[str]] = [[] for _ in range(5)]
@@ -70,7 +70,21 @@ def selection_pair(population:Population) -> Population :
     sortedByFitness = sorted(genomeWithFitness,key=lambda x:x[1],reverse=True)
     return [genome for genome,_ in sortedByFitness[:2]]
 
+def single_point_crossover(firstGenome:Genome, secondGenome:Genome): 
+    for day in firstGenome:
+        if len(firstGenome[day])<2:    
+            return firstGenome,secondGenome
+        #p helps us determine the single point that we crossover
+        p = randint(1, len(firstGenome[day]) - 1)
+        # Basically puts a point in the genome to do the crossover, Genome A [0,1,1,0] Genome B [1,0,0,1] p=1,
+        # the return [0,1,0,1],[1,0,1,0]
+        print(firstGenome[day][0:p] + secondGenome[day][p:], secondGenome[day][0:p] + firstGenome[day][p:])
+    
+
+
+
 population = generate_population(5)
 # # for currentGenome in population:
-for i in selection_pair(population):
-    print(i)
+print(selection_pair(population)[0],selection_pair(population)[1])
+single_point_crossover(selection_pair(population)[0],selection_pair(population)[1])
+    
