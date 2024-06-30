@@ -19,7 +19,6 @@ ClassesList = [
 ]
 DaysList = [Day("Monday", "5"), Day("Tuesday", "10")]
 
-
 def generate_genome() -> Genome :
     genome: Genome = defaultdict(list)
     currentAvailableClass = [1 for _ in range(len(ClassesList))]
@@ -50,7 +49,7 @@ def generate_population(size: int) -> List[Genome]:
 # But having an overlap limit feels useless as you wouldn't want it to ever be larger than 0
 # Value was still be included just in case in the future I want to have a more favored class
 # Need to think of a way to handle sequences of the class
-def fitness(genome: Genome, classes: List[Class], days: List[Day]) -> int:
+def fitness(genome: Genome, classes: List[Class]) -> int:
     duration_taken = 0  
     fitnessValue = 0
     for day in genome:
@@ -65,12 +64,12 @@ def fitness(genome: Genome, classes: List[Class], days: List[Day]) -> int:
 
 #After calculating their fitness, we can now select the strongest parents
 def selection_pair(population:Population) -> Population :
-    genomeWithFitness = [(currentGenome,fitness(currentGenome,ClassesList,DaysList)) for currentGenome in population]
+    genomeWithFitness = [(currentGenome,fitness(currentGenome,ClassesList)) for currentGenome in population]
     #After giving them their fitness, we can now order them and then only take the top 2
     sortedByFitness = sorted(genomeWithFitness,key=lambda x:x[1],reverse=True)
     return [genome for genome,_ in sortedByFitness[:2]]
 
-def single_point_crossover(firstGenome:Genome, secondGenome:Genome) : 
+def single_point_crossover(firstGenome:Genome, secondGenome:Genome) -> Tuple[Genome, Genome]: 
     for day in firstGenome:
         if len(firstGenome[day])<2:    
             return firstGenome,secondGenome
@@ -78,21 +77,47 @@ def single_point_crossover(firstGenome:Genome, secondGenome:Genome) :
         p = randint(1, len(firstGenome[day]) - 1)
         # Basically puts a point in the genome to do the crossover, Genome A [0,1,1,0] Genome B [1,0,0,1] p=1,
         # the return [0,1,0,1],[1,0,1,0]
-        return firstGenome[day][0:p] + secondGenome[day][p:], secondGenome[day][0:p] + firstGenome[day][p:]
+        firstGenome[day]= firstGenome[day][0:p] + secondGenome[day][p:]
+        secondGenome[day]= secondGenome[day][0:p] + firstGenome[day][p:]
+    return firstGenome,secondGenome
     
 # Randomly mutate one of the bits in the genome
-def mutation(genome: Genome, num: int = 1, probability: float = 0.5) -> Genome:
+def mutation(genome: Genome) -> Genome:
     for day in genome:
         #Gets the range of the genome
         index = randrange(len(genome[day]))
         genome[day][index] = 1 if genome[day][index]==0 else 0 
     return genome
 
+def run_evolution(populationSize:int,fitness_limit:int):
+   population = generate_population(populationSize)  
+   for i in population:
+        population = sorted(
+            population, key=lambda genome: fitness(genome,ClassesList), reverse=True
+        )
+
+        #If the fitness of the best genome is larger than the fitness limit,
+        #stop the process as it has reached the desired fitness limit
+        if fitness(population[0],ClassesList) >= fitness_limit:
+            break
+
+        #Select the most fit genomes
+        next_generation=population[0:2]
+
+        for _ in range(int(len(population) / 2) - 1):
+            parents = selection_pair(population)
+            #Perform the crossover 
+            offspring_a, offspring_b = single_point_crossover(parents[0], parents[1])
+            offspring_a = mutation(offspring_a)
+            offspring_b = mutation(offspring_b)
+            next_generation += [offspring_a, offspring_b]
+
+        population = next_generation
 
 
-
-population = generate_population(5)
-# # for currentGenome in population:
-print(selection_pair(population)[0],selection_pair(population)[1])
-single_point_crossover(selection_pair(population)[0],selection_pair(population)[1])
-    
+#
+# population = generate_population(5)
+# # # for currentGenome in population:
+# print(selection_pair(population)[0],selection_pair(population)[1])
+# print(mutation(selection_pair(population)[0])) 
+run_evolution(10,50)
