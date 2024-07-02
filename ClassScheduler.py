@@ -89,35 +89,36 @@ def mutation(genome: Genome) -> Genome:
         genome[day][index] = 1 if genome[day][index]==0 else 0 
     return genome
 
-def run_evolution(populationSize:int,fitness_limit:int):
-   population = generate_population(populationSize)  
-   for i in population:
+def run_evolution(populationSize: int, fitness_limit: int) -> Tuple[Population, int]:
+    population = generate_population(populationSize)
+    
+    for i in range(populationSize):
         population = sorted(
-            population, key=lambda genome: fitness(genome,ClassesList), reverse=True
+            population, key=lambda genome: fitness(genome, ClassesList), reverse=True
         )
 
-        #If the fitness of the best genome is larger than the fitness limit,
-        #stop the process as it has reached the desired fitness limit
-        if fitness(population[0],ClassesList) >= fitness_limit:
+        # If the fitness of the best genome is larger than the fitness limit,
+        # stop the process as it has reached the desired fitness limit
+        if fitness(population[0], ClassesList) >= fitness_limit:
             break
 
-        #Select the most fit genomes
-        next_generation=population[0:2]
+        # Select the most fit genomes
+        next_generation = population[0:2]
 
         for _ in range(int(len(population) / 2) - 1):
             parents = selection_pair(population)
-            #Perform the crossover 
+            # Perform the crossover
             offspring_a, offspring_b = single_point_crossover(parents[0], parents[1])
             offspring_a = mutation(offspring_a)
             offspring_b = mutation(offspring_b)
             next_generation += [offspring_a, offspring_b]
-
+        
         population = next_generation
+    
+    return population, i
 
-
-#
 # population = generate_population(5)
 # # # for currentGenome in population:
 # print(selection_pair(population)[0],selection_pair(population)[1])
 # print(mutation(selection_pair(population)[0])) 
-run_evolution(10,50)
+
