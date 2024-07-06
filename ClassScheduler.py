@@ -92,10 +92,14 @@ def mutation(genome: Genome) -> Genome:
 def run_evolution(populationSize: int, fitness_limit: int,generation_limit: int) -> Tuple[Population, int]:
     population = generate_population(populationSize)
     for i in range(generation_limit):
-        print(i)
         population = sorted(
             population, key=lambda genome: fitness(genome, ClassesList), reverse=True
         )
+
+
+        best_fitness = fitness(population[0], ClassesList)
+        print(f"Generation {i}, Best fitness: {best_fitness}") 
+
 
         # If the fitness of the best genome is larger than the fitness limit,
         # stop the process as it has reached the desired fitness limit
@@ -116,18 +120,15 @@ def run_evolution(populationSize: int, fitness_limit: int,generation_limit: int)
     return population, i
 
 
-def genome_to_classes(genome:Genome, classes:List[Class]):
-    result = []
+def genome_to_classes(genome:Genome, classes:List[Class]) ->Dict[Day,List[Class]]:
+    result = defaultdict(list)
     for day in genome: 
         for index in range(len(classes)):
             if genome[day][index]==1:
-                result += classes[index].name
+                result[day].append(classes[index].name)
     return result
 
-# population = generate_population(5)
-# # # for currentGenome in population:
-# print(selection_pair(population)[0],selection_pair(population)[1])
-# print(mutation(selection_pair(population)[0])) 
-population, generations=run_evolution(5,300,500)
+# The maximum fitness that can be achieved is 38 in the classes list.
+population, generations=run_evolution(5,35,5000)
 print(f"number of generations:{generations}")
 print(f"best solution:{genome_to_classes(population[0],ClassesList)}")
