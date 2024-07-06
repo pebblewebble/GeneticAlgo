@@ -89,10 +89,10 @@ def mutation(genome: Genome) -> Genome:
         genome[day][index] = 1 if genome[day][index]==0 else 0 
     return genome
 
-def run_evolution(populationSize: int, fitness_limit: int) -> Tuple[Population, int]:
+def run_evolution(populationSize: int, fitness_limit: int,generation_limit: int) -> Tuple[Population, int]:
     population = generate_population(populationSize)
-    
-    for i in range(populationSize):
+    for i in range(generation_limit):
+        print(i)
         population = sorted(
             population, key=lambda genome: fitness(genome, ClassesList), reverse=True
         )
@@ -104,7 +104,6 @@ def run_evolution(populationSize: int, fitness_limit: int) -> Tuple[Population, 
 
         # Select the most fit genomes
         next_generation = population[0:2]
-
         for _ in range(int(len(population) / 2) - 1):
             parents = selection_pair(population)
             # Perform the crossover
@@ -112,13 +111,23 @@ def run_evolution(populationSize: int, fitness_limit: int) -> Tuple[Population, 
             offspring_a = mutation(offspring_a)
             offspring_b = mutation(offspring_b)
             next_generation += [offspring_a, offspring_b]
-        
         population = next_generation
     
     return population, i
+
+
+def genome_to_classes(genome:Genome, classes:List[Class]):
+    result = []
+    for day in genome: 
+        for index in range(len(classes)):
+            if genome[day][index]==1:
+                result += classes[index].name
+    return result
 
 # population = generate_population(5)
 # # # for currentGenome in population:
 # print(selection_pair(population)[0],selection_pair(population)[1])
 # print(mutation(selection_pair(population)[0])) 
-
+population, generations=run_evolution(5,300,500)
+print(f"number of generations:{generations}")
+print(f"best solution:{genome_to_classes(population[0],ClassesList)}")
