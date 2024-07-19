@@ -141,18 +141,11 @@ def genome_to_classes(genome:Genome, classes:List[Class]) ->Dict[Day,List[Class]
     return result
 
 # The maximum fitness that can be achieved is 38 in the classes list.
-population, generations=run_evolution(5,35,5000)
+population, generations=run_evolution(5,35,10000)
 print(f"number of generations:{generations}")
 print(f"best solution:{genome_to_classes(population[0],ClassesList)}")
 
-# Ok found a bug where classes that already occured, probably its the 
-#mutation part, need to fix that
-
-
-
-
-
-
+#After changing the mutation, it is harder to meet the desired fitness value which is 35
 
 
 
