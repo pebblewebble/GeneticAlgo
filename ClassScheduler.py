@@ -16,8 +16,22 @@ ClassesList = [
     Class("Java", "3", "10", "30"),
     Class("ABC", "1", "1", "50"),
     Class("SPCCT", "1", "5", "30"),
+    Class("Math", "2", "8", "25"),
+    Class("Science", "3", "9", "28"),
+    Class("History", "1", "4", "22"),
+    Class("Geography", "2", "7", "26"),
+    Class("Physics", "2", "8", "29"),
+    Class("Chemistry", "2", "8", "27"),
+    Class("Biology", "2", "8", "30"),
+    Class("Art", "1", "3", "15"),
+    Class("Music", "1", "3", "18"),
+    Class("Physical Education", "1", "2", "20"),
+    Class("Computer Science", "3", "10", "30"),
+    Class("Literature", "2", "6", "24"),
+    Class("Economics", "2", "7", "21"),
+    Class("Psychology", "1", "4", "19"),
 ]
-DaysList = [Day("Monday", "5"), Day("Tuesday", "10")]
+DaysList = [Day("Monday", "15"), Day("Tuesday", "15")]
 
 def generate_genome() -> Genome :
     genome: Genome = defaultdict(list)
@@ -141,11 +155,16 @@ def genome_to_classes(genome:Genome, classes:List[Class]) ->Dict[Day,List[Class]
     return result
 
 # The maximum fitness that can be achieved is 38 in the classes list.
-population, generations=run_evolution(5,35,10000)
+population, generations=run_evolution(5,50,10000)
 print(f"number of generations:{generations}")
 print(f"best solution:{genome_to_classes(population[0],ClassesList)}")
 
 #After changing the mutation, it is harder to meet the desired fitness value which is 35
 
+#Added more classes and a higher desired fitness value. It seems that
+#it is even harder to find even a fitness value over 0. Because
+# with more classes, it tends to go over the limit of the day
 
+#By adding more duration to the days, it is easier to get desired fitness
+#So if you add more classes to the list, duration should also be added to the day
 
