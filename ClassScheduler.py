@@ -93,7 +93,12 @@ def mutation(genome: Genome) -> Genome:
     for day in genome:
         #Gets the range of the genome
         index = randrange(len(genome[day]))
-        genome[day][index] = 1 if genome[day][index]==0 and class_assigned[index]==0 else 0 
+        if genome[day][index] == 0 and class_assigned[index] == 0:
+            genome[day][index] = 1
+            class_assigned[index] = 1
+        elif genome[day][index] == 1:
+            genome[day][index] = 0
+            class_assigned[index] = 0
     return genome
 
 def run_evolution(populationSize: int, fitness_limit: int,generation_limit: int) -> Tuple[Population, int]:
