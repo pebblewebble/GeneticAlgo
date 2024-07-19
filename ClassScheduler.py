@@ -83,10 +83,17 @@ def single_point_crossover(firstGenome:Genome, secondGenome:Genome) -> Tuple[Gen
     
 # Randomly mutate one of the bits in the genome
 def mutation(genome: Genome) -> Genome:
+    #Create a list to hold if the class has been conducted already or not
+    class_assigned=[0]*len(ClassesList)
+    for day in genome:
+        for index in range(len(ClassesList)):
+            #If the class has been conducted, become 1, else keep old value
+            class_assigned[index]= 1 if genome[day][index]== 1 else class_assigned[index]
+
     for day in genome:
         #Gets the range of the genome
         index = randrange(len(genome[day]))
-        genome[day][index] = 1 if genome[day][index]==0 else 0 
+        genome[day][index] = 1 if genome[day][index]==0 and class_assigned[index]==0 else 0 
     return genome
 
 def run_evolution(populationSize: int, fitness_limit: int,generation_limit: int) -> Tuple[Population, int]:
