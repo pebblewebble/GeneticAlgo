@@ -2,6 +2,7 @@ from collections import namedtuple, defaultdict
 import random
 from typing import List, Dict, Tuple
 from random import choices,randint,randrange
+import copy
 
 # For Genome, I am thinking of having a list containing a list of ints instead
 # Genome: List[List[str]] = [[] for _ in range(5)]
@@ -12,8 +13,8 @@ Population = List[Genome]
 ClassesList = [
     Class("SPCC", "2", "5", "30"),
     Class("PSMOD", "2", "5", "30"),
-    Class("WPCS", "1", "2", "20"),
-    Class("Java", "3", "10", "30"),
+    Class("WPCS", "2", "2", "20"),
+    Class("Java", "2", "10", "30"),
     Class("ABC", "1", "1", "50"),
     Class("SPCCT", "1", "5", "30"),
     Class("Math", "2", "8", "25"),
@@ -117,15 +118,16 @@ def mutation(genome: Genome) -> Genome:
 
 def run_evolution(populationSize: int, fitness_limit: int,generation_limit: int) -> Tuple[Population, int]:
     population = generate_population(populationSize)
+    highestFitness=0
     for i in range(generation_limit):
         population = sorted(
             population, key=lambda genome: fitness(genome, ClassesList), reverse=True
         )
 
-
         best_fitness = fitness(population[0], ClassesList)
         print(f"Generation {i}, Best fitness: {best_fitness}") 
-
+        if(best_fitness>highestFitness):
+            highestFitness=best_fitness
 
         # If the fitness of the best genome is larger than the fitness limit,
         # stop the process as it has reached the desired fitness limit
@@ -135,14 +137,18 @@ def run_evolution(populationSize: int, fitness_limit: int,generation_limit: int)
         # Select the most fit genomes
         next_generation = population[0:2]
         for _ in range(int(len(population) / 2) - 1):
-            parents = selection_pair(population)
+            # parents = selection_pair(population)
+            parents = [copy.deepcopy(population[0]),copy.deepcopy(population[1])]
             # Perform the crossover
             offspring_a, offspring_b = single_point_crossover(parents[0], parents[1])
+            # offspring_a=copy.deepcopy(offspring_a)
+            # offspring_b=copy.deepcopy(offspring_b)
             offspring_a = mutation(offspring_a)
             offspring_b = mutation(offspring_b)
             next_generation += [offspring_a, offspring_b]
         population = next_generation
     
+    print(f"\n\nThe highest fitness found was : {highestFitness}")
     return population, i
 
 
@@ -154,8 +160,8 @@ def genome_to_classes(genome:Genome, classes:List[Class]) ->Dict[Day,List[Class]
                 result[day].append(classes[index].name)
     return result
 
-# The maximum fitness that can be achieved is 38 in the classes list.
-population, generations=run_evolution(5,50,10000)
+# The maximum fitness that can be achieved is 58 in the classes list.
+population, generations=run_evolution(5,58,20000)
 print(f"number of generations:{generations}")
 print(f"best solution:{genome_to_classes(population[0],ClassesList)}")
 

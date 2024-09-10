@@ -17,14 +17,21 @@ MutationFunc = Callable[[Genome], Genome]
 PrinterFunc = Callable[[Population, int, FitnessFunc], None]
 
 things = [
-    Thing("Laptop", "15", "5"),
+    Thing("Laptop", "2", "5"),
     Thing("Book", "5", "2"),
-    Thing("Bottle", "10", "1"),
+    Thing("Bottle", "6", "1"),
     Thing("Mouse", "5", "1"),
-    Thing("Sejarah", "30", "10"),
-    Thing("Bag", "50", "10"),
+    Thing("Sejarah", "3", "3"),
+    Thing("Bag", "4", "2"),
 ]
 
+# things = [
+#     Thing("1","12","5"),
+#     Thing("2","10","7"),
+#     Thing("3","6","3"),
+#     Thing("4","8","8"),
+#     Thing("5","7","4")
+# ]
 
 # Although Python can support dynamically typed variables, it is best to specify for future cases.
 def generate_genome(length: int) -> Genome:
@@ -94,11 +101,18 @@ def run_evolution(
     printer: Optional[PrinterFunc] = None,
 ) -> Tuple[Population, int]:
     population = populate_func()
+    highestFitness=0
 
     for i in range(generation_limit):
         population = sorted(
             population, key=lambda genome: fitness_func(genome), reverse=True
         )
+
+        best_fitness = fitness(population[0], things,8)
+        print(f"Generation {i}, Best fitness: {best_fitness}") 
+        if(best_fitness>highestFitness):
+            highestFitness=best_fitness
+
 
         if printer is not None:
             printer(population, i, fitness_func)
@@ -107,16 +121,17 @@ def run_evolution(
             break
 
         next_generation = population[0:2]
-
-        for j in range(int(len(population) / 2) - 1):
+        print(next_generation)
+        for _ in range(int(len(population) / 2) - 1):
             parents = selection_func(population, fitness_func)
             offspring_a, offspring_b = crossover_func(parents[0], parents[1])
             offspring_a = mutation_func(offspring_a)
             offspring_b = mutation_func(offspring_b)
+            
             next_generation += [offspring_a, offspring_b]
-
         population = next_generation
 
+    print(f"The highest fitness found was :{highestFitness}")
     return population, i
 
 
@@ -130,9 +145,9 @@ def genome_to_things(genome: Genome, things: [Thing]) -> [Thing]:
 
 population, generations = run_evolution(
     populate_func=partial(generate_population, size=10, genome_length=len(things)),
-    fitness_func=partial(fitness, things=things, weight_limit=20),
+    fitness_func=partial(fitness, things=things, weight_limit=8),
     fitness_limit=740,
-    generation_limit=100,
+    generation_limit=500,
 )
 print(f"number of generations:{generations}")
 print(f"best solution:{genome_to_things(population[0],things)}")
