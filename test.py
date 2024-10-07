@@ -3,8 +3,6 @@ import random
 from typing import List, Dict, Tuple
 from random import choices,randint,randrange
 import copy
-import os
-clear = lambda: os.system('cls')
 
 # For Genome, I am thinking of having a list containing a list of ints instead
 # Genome: List[List[str]] = [[] for _ in range(5)]
@@ -13,33 +11,15 @@ Day = namedtuple("Day", ["name", "available_duration"])
 Genome = Dict[Day, List[int]]
 Population = List[Genome]
 ClassesList = [
-    # Class("SPCC", "2", "5", "30"),
-    # Class("PSMOD", "2", "5", "30"),
-    # Class("WPCS", "2", "2", "20"),
-    # Class("Java", "2", "10", "30"),
-    # Class("ABC", "1", "1", "50"),
-    # Class("SPCCT", "1", "5", "30"),
-    # Class("Math", "2", "8", "25"),
-    # Class("Science", "3", "9", "28"),
-    # Class("History", "1", "4", "22"),
-    # Class("Geography", "2", "7", "26"),
-    # Class("Physics", "2", "8", "29"),
-    # Class("Chemistry", "2", "8", "27"),
-    # Class("Biology", "2", "8", "30"),
-    # Class("Art", "1", "3", "15"),
-    # Class("Music", "1", "3", "18"),
-    # Class("Physical Education", "1", "2", "20"),
-    # Class("Computer Science", "3", "10", "30"),
-    # Class("Literature", "2", "6", "24"),
-    # Class("Economics", "2", "7", "21"),
-    # Class("Psychology", "1", "4", "19"),
     Class("Math", "3", "10", "30"),
     Class("English", "2", "8", "25"),
     Class("History", "3", "6", "20"),
     Class("Science", "2", "9", "28"),
     Class("Art", "1", "5", "15"),
 ]
-DaysList = [Day("Monday", "5"), Day("Tuesday", "3")]
+DaysList = [Day("Monday", "5"), Day("Tuesday", "5")]
+
+# Best solution would be Monday:english,history,art Tuesday=math
 
 def generate_genome() -> Genome :
     genome: Genome = defaultdict(list)
@@ -81,7 +61,11 @@ def fitness(genome: Genome, classes: List[Class]) -> int:
                 fitnessValue += int(classes[index].value)
 
              if duration_taken>int(day.available_duration):
-                return 0
+                penalty_factor = 5
+                fitnessValue -= (duration_taken - int(day.available_duration)) * penalty_factor
+                # return 0
+             
+             fitnessValue=max(fitnessValue,0)
     return fitnessValue
 
 #After calculating their fitness, we can now select the strongest parents
@@ -91,29 +75,39 @@ def selection_pair(population:Population) -> Population :
     sortedByFitness = sorted(genomeWithFitness,key=lambda x:x[1],reverse=True)
     return [genome for genome,_ in sortedByFitness[:2]]
 
+def uniform_crossover(firstGenome: Genome, secondGenome: Genome) -> Tuple[Genome, Genome]:
+    offspring_a = copy.deepcopy(firstGenome)
+    offspring_b = copy.deepcopy(secondGenome)
+    for day in firstGenome:
+        for index in range(len(ClassesList)):
+            if random.random() < 0.5:
+                offspring_a[day][index], offspring_b[day][index] = offspring_b[day][index], offspring_a[day][index]
+    return offspring_a, offspring_b
+
 def single_point_crossover(firstGenome:Genome, secondGenome:Genome) -> Tuple[Genome, Genome]: 
-    # print(firstGenome)
-    # print("\n")
-    # print(secondGenome)
-    # print("\n")
+    offspring_a = copy.deepcopy(firstGenome)
+    offspring_b = copy.deepcopy(secondGenome)
     for day in firstGenome:
         if len(firstGenome[day])<2:    
-            return firstGenome,secondGenome
+            return offspring_a,offspring_b
         #p helps us determine the single point that we crossover
         p = randint(1, len(firstGenome[day]) - 1)
         # Basically puts a point in the genome to do the crossover, Genome A [0,1,1,0] Genome B [1,0,0,1] p=1,
         # the return [0,1,0,1],[1,0,1,0]
-        firstGenome[day]= firstGenome[day][0:p] + secondGenome[day][p:]
-        secondGenome[day]= secondGenome[day][0:p] + firstGenome[day][p:]
-    # print(firstGenome)
-    # print("\n")
-    # print(secondGenome)
-    # clear()
-    return firstGenome,secondGenome
+        # firstGenome[day]= firstGenome[day][0:p] + secondGenome[day][p:]
+        # secondGenome[day]= secondGenome[day][0:p] + firstGenome[day][p:]
+        temp_a = offspring_a[day][:p] + offspring_b[day][p:]
+        temp_b = offspring_b[day][:p] + offspring_a[day][p:]
+        
+        offspring_a[day] = temp_a
+        offspring_b[day] = temp_b
+
+    return offspring_a,offspring_b
     
 # Randomly mutate one of the bits in the genome
 def mutation(genome: Genome) -> Genome:
-    mutation_rate=0.05
+    # tempGenome=copy.deepcopy(genome)
+    mutation_rate=0.2
     #Create a list to hold if the class has been conducted already or not
     class_assigned= [[0] * len(ClassesList) for _ in range(len(genome))]
     dayIdx=0
@@ -135,52 +129,65 @@ def mutation(genome: Genome) -> Genome:
                 elif genome[day][index]==1:
                     genome[day][index]=0
                     class_assigned[dayIdx][index]=0
-
+    # if(genome!=tempGenome):
+    #     print(genome)
+    #     print(tempGenome)
+    #     print("Mutated")
     return genome
 
-def print_genome(genome: Genome):
-    for day in genome:
-        classes = [ClassesList[i].name for i, scheduled in enumerate(genome[day]) if scheduled]
-        print(f"{day.name}: {', '.join(classes) if classes else 'No classes'}")
-    print()  # Add an empty line for better readability
+def roulette_wheel_selection(population: Population, fitnesses: List[int], k: int) -> List[Genome]:
+    total_fitness = sum(fitnesses)
+    selection_probs = [fitness / total_fitness for fitness in fitnesses]
+    selected_genomes = choices(population, weights=selection_probs, k=k)
+    return selected_genomes
 
 def run_evolution(populationSize: int, fitness_limit: int,generation_limit: int) -> Tuple[Population, int]:
+    # first = 0 
+    # initialBest = 0
     population = generate_population(populationSize)
-    highestFitness=0
     for i in range(generation_limit):
         population = sorted(
             population, key=lambda genome: fitness(genome, ClassesList), reverse=True
         )
 
+        population_fitness = [fitness(genome, ClassesList) for genome in population]
+        # print(f"Generation {i}, Fitness values: {population_fitness}")
+
+        # if(first==0):
+        #     initialBest=population[0]
+        #     first=1
+
         best_fitness = fitness(population[0], ClassesList)
         print(f"Generation {i}, Best fitness: {best_fitness}") 
-        if(best_fitness>highestFitness):
-            highestFitness=best_fitness
 
         # If the fitness of the best genome is larger than the fitness limit,
         # stop the process as it has reached the desired fitness limit
         if fitness(population[0], ClassesList) >= fitness_limit:
             break
 
-        # print(population[0],population[1])
-        # input("hi")
-
-
         # Select the most fit genomes
         next_generation = population[0:2]
+        # fitnesses = [fitness(genome, ClassesList) for genome in population]
+        # next_generation = roulette_wheel_selection(population, fitnesses, k=5)
         for _ in range(int(len(population) / 2) - 1):
-            # parents = selection_pair(population)
             parents = [copy.deepcopy(population[0]),copy.deepcopy(population[1])]
+            # parents = selection_pair(population)
             # Perform the crossover
-            offspring_a, offspring_b = single_point_crossover(parents[0], parents[1])
-            # offspring_a=copy.deepcopy(offspring_a)
-            # offspring_b=copy.deepcopy(offspring_b)
+            # offspring_a, offspring_b = single_point_crossover(parents[0], parents[1])
+            offspring_a,offspring_b = uniform_crossover(parents[0],parents[1])
             offspring_a = mutation(offspring_a)
             offspring_b = mutation(offspring_b)
             next_generation += [offspring_a, offspring_b]
-        population = next_generation
-    
-    print(f"\n\nThe highest fitness found was : {highestFitness}")
+            # population+=[offspring_a,offspring_b]
+
+        if i % 10 == 0:
+            # print(f"Injecting random genomes at generation {i}.")
+            random_genomes = generate_population(5)  # Add 5 random genomes
+            next_generation.extend(random_genomes)
+
+        next_generation = sorted(next_generation, key=lambda genome: fitness(genome, ClassesList), reverse=True)
+        population = next_generation[:populationSize]
+    # print(initialBest) 
     return population, i
 
 
@@ -192,9 +199,11 @@ def genome_to_classes(genome:Genome, classes:List[Class]) ->Dict[Day,List[Class]
                 result[day].append(classes[index].name)
     return result
 
-# The maximum fitness that can be achieved is 58 in the classes list.
-population, generations=run_evolution(10,38,5000)
+# The maximum fitness that can be achieved is 38 in the classes list.
+population, generations=run_evolution(50,50,2500)
+
 print(f"number of generations:{generations}")
+# print(population[0])
 print(f"best solution:{genome_to_classes(population[0],ClassesList)}")
 
 #After changing the mutation, it is harder to meet the desired fitness value which is 35

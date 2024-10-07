@@ -145,8 +145,8 @@ def genome_to_things(genome: Genome, things: [Thing]) -> [Thing]:
 
 population, generations = run_evolution(
     populate_func=partial(generate_population, size=10, genome_length=len(things)),
-    fitness_func=partial(fitness, things=things, weight_limit=8),
-    fitness_limit=740,
+    fitness_func=partial(fitness, things=things, weight_limit=14),
+    fitness_limit=25,
     generation_limit=500,
 )
 print(f"number of generations:{generations}")
